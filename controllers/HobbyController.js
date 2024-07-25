@@ -2,21 +2,60 @@ import User from "../models/User.js";
 import HobbyService from "../services/HobbyService.js";
 
 const getAllHobby = async (req, res) =>{
-    try{
-        const limit = req.query.limit || 10;
-        const offset = req.query.offset || 0;
-        const hobbies = await HobbyService.getAllHobby(limit, offset);
-        return res.status(200).json({
-            message: "get posts success ccc",
-            data: hobbies
-        })
-    }catch (error) {
-        res.status(500).json({
-            messages: error.toString()
-        })
-    }
-}
+  try {
+    let query = "query { folders (workspace_ids: 6404069) { name id children { id name }}}";
 
+   const response = await fetch ("https://api.monday.com/v2", {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization' : 'eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjI5Njg5OTA5MCwiYWFpIjoxMSwidWlkIjo1MTUzOTA4MiwiaWFkIjoiMjAyMy0xMS0xN1QwNzoxMDozOS4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MTY2OTUxMjMsInJnbiI6InVzZTEifQ.2iuavWH4Uc_gsAGwJJgIKX2Bu7Zw2XwiAXYbrWbaj-Y'
+       },
+       body: JSON.stringify({
+         'query' : query
+       })
+      })
+  const data = await response.json();
+  const board = data.data.folders.flatMap((item) => item.children);
+ const query2 = `{ boards(ids: [${board.map((b) => b.id).join(" ")}]) { items_page(limit: 23) { cursor items { id name  column_values { id type text value ... on MirrorValue { mirrored_items { linked_item { id name column_values { id text }} } } } } } } }`
+let indices = Array.from({ length: Math.ceil(listboard.length / 5) }, (_, i) => i * 5)
+
+  // const fetchData = indices.map((item) => {
+    const fetchData = await getListByQuery(`{ boards(ids: [${board.map((b) => b.id).slice(0, 5).join(" ")}]) { items_page(limit: 23) { cursor items { id name  column_values { id type text value ... on MirrorValue { mirrored_items { linked_item { id name column_values { id text }} } } } } } } }`);
+  // })
+  // Promise.all(fetchData).then((res) => {
+  //   const list = res.data.data?.boards.flatMap((i) => i.items_page.items);
+  //   // res.status(response.status).json(list);
+  // }).catch((err) => {
+  // res.status(500).json({ message: 'Internal Server Error' });
+
+  // })
+  res.status(response.status).json(fetchData);
+} catch (error) {
+  res.status(500).json({ message: 'Internal Server Error' });
+}
+}
+const getListByQuery = async (query) => {
+  const apiUrl = 'https://api.monday.com/v2';
+  try {
+  
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': "eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjI5Njg5OTA5MCwiYWFpIjoxMSwidWlkIjo1MTUzOTA4MiwiaWFkIjoiMjAyMy0xMS0xN1QwNzoxMDozOS4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MTY2OTUxMjMsInJnbiI6InVzZTEifQ.2iuavWH4Uc_gsAGwJJgIKX2Bu7Zw2XwiAXYbrWbaj-Y",
+      },
+      body: JSON.stringify({ query }),
+    });
+  
+    const result = await response.json();
+    // res.status(response.status).json(result);
+    return result;
+  } catch (error) {
+    // res.status(500).json({ message: 'Internal Server Error' });
+    return false
+  }
+}
 const getAllHobbyByKeyWord = async (req, res) =>{
     try{
         const keyWord = req.params.keyWord;
@@ -171,6 +210,26 @@ const getUserInfoByAccessToken = async (req, res) => {
     return res.status(404).json(error)
   }
 }
+const getAllBoard = async() => {
+  try {
+    let query = "query { folders (workspace_ids: 6404069) { name id children { id name }}}";
+
+   const response = await fetch ("https://api.monday.com/v2", {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization' : 'eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjI5Njg5OTA5MCwiYWFpIjoxMSwidWlkIjo1MTUzOTA4MiwiaWFkIjoiMjAyMy0xMS0xN1QwNzoxMDozOS4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MTY2OTUxMjMsInJnbiI6InVzZTEifQ.2iuavWH4Uc_gsAGwJJgIKX2Bu7Zw2XwiAXYbrWbaj-Y'
+       },
+       body: JSON.stringify({
+         'query' : query
+       })
+      })
+  const data = await response.json();
+  res.status(response.status).json(data);
+} catch (error) {
+  res.status(500).json({ message: 'Internal Server Error' });
+}
+}
 export default{
     getAllHobby,
     getAllHobbyByKeyWord,
@@ -181,5 +240,6 @@ export default{
     updatePassword,
     updateIsBan,
     login,
-    getUserInfoByAccessToken
+    getUserInfoByAccessToken,
+    getAllBoard
 }

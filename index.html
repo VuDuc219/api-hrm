@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optisix - Payment</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .flex-end {
+            margin: 10px 0px;
+            display: flex;
+            justify-content: end;
+        }
+
+        body {
+            margin: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <div id="app">
+        <div>
+            <h3 style="text-align: center;">Danh sách yêu cầu thanh toán</h3>
+            <div class="flex-end">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+                    Thêm mới yêu cầu
+                </button>
+            </div>
+        </div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Mã giao dịch</th>
+                    <th>Tên giao dịch</th>
+                    <th>Số tiền thanh toán</th>
+                    <th>Ngân hàng</th>
+                    <th>Số tài khoản</th>
+                    <th>Trạng thái</th>
+                    <th>#</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(d, index) in data" :key="d._id">
+                    <td>{{index+1}}</td>
+                    <td>{{d.code}}</td>
+                    <td>{{d.name}}</td>
+                    <td>{{d.total_money}}</td>
+                    <td>{{d.bank_name}}</td>
+                    <td>{{d.bank_number}}</td>
+                    <td>
+                        <p v-if="d.status == 0"
+                            style="padding: 2px; border-radius: 4px; color: white; background-color: rgb(255, 203, 0); text-align: center;">
+                            Chờ duyệt</p>
+                        <p v-else-if="d.status == 1"
+                            style="padding: 2px; border-radius: 4px; color: white; background-color: rgb(223, 47, 74); text-align: center;">
+                            Từ chối</p>
+                        <p v-else
+                            style="padding: 2px; border-radius: 4px; color: white; background-color: green; text-align: center;">
+                            Đã thanh toán</p>
+                    </td>
+                    <td style="display: flex; gap: 4px; align-items: center;">
+                        <p style="cursor: pointer; color: green;"  data-toggle="modal" data-target="#editmodal" @click="handleEdit(d)">Update</p>
+                        <p style="cursor: pointer; color: red">Delete</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="modal" id="myModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">Thêm mới</h4>
+                        <button type="button" class="close" id="close" data-dismiss="modal">&times;</button>
+                    </div>
+
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="usr">Mã giao dịch:</label>
+                            <input type="text" class="form-control" v-model="data_post.code">
+                        </div>
+                        <div class="form-group">
+                            <label for="usr">Tên giao dịch:</label>
+                            <input type="text" class="form-control" v-model="data_post.name">
+                        </div>
+                        <div class="form-group">
+                            <label for="usr">Số tiền thanh toán:</label>
+                            <input type="number" class="form-control" v-model="data_post.total_money">
+                        </div>
+                        <div class="form-group">
+                            <label for="usr">Số tài khoản:</label>
+                            <input type="text" class="form-control" v-model="data_post.bank_number">
+                        </div>
+                        <div class="form-group">
+                            <label for="usr">Ngân hàng:</label>
+                            <input type="text" class="form-control" v-model="data_post.bank_name">
+                        </div>
+                    </div>
+
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" @click="createPayment">Thêm</button>
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="modal" id="editmodal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">Cập nhật giao dịch</h4>
+                        <button type="button" class="close" id="close1" data-dismiss="modal">&times;</button>
+                    </div>
+
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                        <h5>Số tiền thanh toán: {{data_edit.total_money}} đồng</h5>
+                        <h5>Ngân hàng: {{data_edit.bank_name}}</h5>
+                        <h5>Số tài khoản: {{data_edit.bank_number}}</h5>
+                        <div class="form-group">
+                            <label for="usr">Trạng thái:</label>
+                            <select class="form-control" v-model="data_edit.status"> 
+                                <option value="0">Chờ duyệt</option>
+                                <option value="1">Từ chối</option>
+                                <option value="2">Đã thanh toán</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" @click="editPayment">Lưu lại</button>
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted, reactive, watch } = Vue
+
+        createApp({
+            setup() {
+                const message = ref('Hello vue!')
+                const data_post = ref({
+                    status: 0,
+                    code: '',
+                    name: '',
+                    bank_name: '',
+                    bank_number: '',
+                    total_money: ''
+                })
+                const data = ref([])
+                const data_edit = ref({})
+                const domain_api = 'http://localhost:3008'
+                onMounted(async () => {
+                    try {
+                        const response = await fetch(domain_api + '/items')
+                        const data_a = await response.json()
+                        data.value = data_a;
+                    } catch (error) {
+                        console.error('Error fetching users:', error)
+                    }
+                })
+                async function getData() {
+                    try {
+                        const response = await fetch(domain_api + '/items')
+                        const data_a = await response.json()
+                        data.value = data_a;
+                    } catch (error) {
+                        console.error('Error fetching users:', error)
+                    }
+                }
+                // watch(data_post.value, (newValue, oldValue) => {
+                //     console.log('Users updated', { newValue, oldValue })
+                // })
+                function handleEdit(d) {
+                    data_edit.value = JSON.parse(JSON.stringify(d))
+                }
+                async function createPayment() {
+                    try {
+                        const response = await fetch(domain_api + '/items', {
+                            method: 'POST',
+                            body: JSON.stringify(data_post.value),
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                        });
+                        const data_a = await response.json()
+                        data.value.push(data_a);
+                        data_post.value = {
+                            status: 0,
+                            code: '',
+                            name: '',
+                            bank_name: '',
+                            bank_number: '',
+                            total_money: ''
+                        }
+                        document.getElementById('close').click();
+                    } catch (error) {
+                        res.status(500).json({ message: 'Internal Server Error' });
+                    }
+
+                }
+
+
+                async function editPayment() {
+                    try {//'/items/:id/status'
+                        const response = await fetch(domain_api +`/items/${data_edit.value._id}/status`, {
+                            method: 'PUT',
+                            body: JSON.stringify({
+                                status: data_edit.value.status
+                            }),
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                        });
+                        getData();
+                        document.getElementById('close1').click();
+                    } catch (error) {
+                        res.status(500).json({ message: 'Internal Server Error' });
+                    }
+
+                }
+
+
+                return {
+                    message,
+                    data_post,
+                    data,
+                    handleEdit,
+                    data_edit,
+                    createPayment,
+                    editPayment
+                }
+            },
+        }).mount('#app')
+    </script>
+</body>
+
+</html>

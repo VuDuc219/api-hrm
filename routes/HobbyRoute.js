@@ -14,6 +14,7 @@ router.patch('/update-user', HobbyController.updateUserBasicInfo);
 router.patch('/update-password', HobbyController.updatePassword);
 router.patch('/update-is-ban', HobbyController.updateIsBan);
 router.post('/login', HobbyController.login);
+router.get('/board', HobbyController.getAllBoard);
 // router.post('/get-user-', HobbyController.login);
 
 export default router;

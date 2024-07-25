@@ -16,5 +16,5 @@ const departmentSchema = new Schema({
     uuid: String
 }, { timestamps: true });
 
-const Post = mongoose.model('Departments', departmentSchema);
-export default Post;
+const Department = mongoose.model('Departments', departmentSchema);
+export default Department;

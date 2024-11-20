@@ -6,6 +6,8 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import { ExpressPeerServer } from 'peer';
 import http from 'http'
+import PayOS from "@payos/node";
+import QRCode from 'qrcode-svg';
 config();
 
 
@@ -80,7 +82,37 @@ app.put('/items/:id/status', async (req, res) => {
     res.status(500).send(error);
   }
 });
+const api_key = 'AK_CS.7fd8c230774711ef80bb3d5e2ce05983.KQI6QB6yum2sKgScFcbJEmgmUXKFQxPG98JzsWybvmY2I2cjwlHl1uYKbn2wIJp7revP4agF';
 
+function generateQRCodeSVG(text) {
+  const qrCode = new QRCode({
+    content: text,
+    padding: 4,
+    width: 256,
+    height: 256,
+    color: "#000000",
+    background: "#ffffff",
+    ecl: "M", // Error correction level
+  });
+  return qrCode.svg();
+}
+function convertTextToUrl(text) {
+  const encodedText = encodeURIComponent(text);
+  return `https://quickchart.io/qr?text=${encodedText}&size=200`;
+}
+app.post('/create-payment', async(req,res) => {
+const paymentLinkData = await payos.createPaymentLink(req.body);
+const qrImg = generateQRCodeSVG(paymentLinkData.qrCode);
+
+res.send({
+  data: paymentLinkData,
+  imgQr: convertTextToUrl(paymentLinkData.qrCode)
+})
+})
+app.get('/get-status-order/:id', async(req, res) => {
+  const response = await payos.getPaymentLinkInformation(req.params.id);
+  res.send(response)
+})
 
     server.listen(PORT, () => {
       console.log('Dinter running on port ' + PORT);

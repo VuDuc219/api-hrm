@@ -17,6 +17,7 @@ const app = express();
 app.use('/public',express.static('public'));
 const PORT = process.env.PORT || 3007;
 
+const payos = new PayOS("4898d756-c74c-474a-a130-7a77ab262bf4", "be42b54b-b79f-491f-8071-85e1ab7978c7", "4d282c87b7b6a0bbb23d8c67f1e5fb34d3c83ca9c505ecbab307fbe7421ad0b8");
 const server = http.Server(app);
 const peerServer = ExpressPeerServer(server, {
   debug: true,

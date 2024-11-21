@@ -29,8 +29,6 @@ async function main() {
     await mongoose.connect(process.env.MONGO_DB_URL);
     console.log("Connect to MongoDB success");
     app.use(cors());
-    
-
 
     app.use(bodyParser.json());
     // Define the schema

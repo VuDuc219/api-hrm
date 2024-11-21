@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "@payos/node": "^1.0.10",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
@@ -26,7 +27,6 @@
     "mysql2": "^3.10.3",
     "nodemon": "^3.0.2",
     "peer": "^1.0.2",
-    "@payos/node": "^1.0.10",
     "qrcode-svg": "^1.1.0"
   }
 }
